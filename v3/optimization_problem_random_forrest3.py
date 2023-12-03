@@ -67,19 +67,28 @@ def objective(params):
     ggap, Ibg_init, Ikir_coef, cm, dx, K_o = params
     A = simulate_process_modified_v2(ggap, Ibg_init, Ikir_coef, cm, dx, K_o)
     dx = 0.06
-    D = np.abs(A[-2, 98:135] - A[int(0.1 * len(A)), 98:135]) / np.abs(A[int(0.1 * len(A)), 98:135])[0]
+    #D = np.abs(A[-2, 98:135] - A[int(0.1 * len(A)), 98:135]) / np.abs(A[int(0.1 * len(A)), 98:135])[0]
+    #D = np.abs(A[399998, 98:135] - A[99000, 98:135]) / np.abs(A[99000, 98:135])[0]
+    D = np.abs(A[99000, 98:135])[0] / np.abs(A[399998, 98:135] - A[99000, 98:135])
     distance_m = dx * np.arange(99, 136)
     coefficients = np.polyfit(distance_m, D, 1)
-    loss = (coefficients[0] - 2)**2 + (coefficients[1] - 3.2)**2
+    #loss = (coefficients[0] - 2)**2 + (coefficients[1] - 3.2)**2
+    loss = (coefficients[0] + 0.0000000000001)**2 + (coefficients[1] - 0.6)**2
+    
+    # Check if loss is NaN or infinite
+    if np.isnan(loss) or np.isinf(loss):
+        print("Warning: Invalid loss value encountered for parameters:", params)
+        loss = 1e10  # Assign a large penalty value
+    
     return loss
 
 space = [
-    Real(0.1, 25, name="ggap"),
-    Real(0.5, 1.5, name="Ibg_init"),
-    Real(0.5, 0.94, name="Ikir_coef"),
-    Real(8, 9.4, name="cm"),
-    Real(0.05, 0.07, name="dx"),
-    Real(1, 5, name="K_o")
+    Real(0.1, 35, name="ggap"),
+    Real(0.1, 1.5, name="Ibg_init"),
+    Real(0.3, 1.2, name="Ikir_coef"),
+    Real(8, 11, name="cm"),
+    Real(0.01, 0.09, name="dx"),
+    Real(1, 8, name="K_o")
 ]
 
 # Custom RandomForest that can return standard deviation
@@ -96,11 +105,10 @@ class RandomForestWithUncertainty(RandomForestRegressor):
 
 # Optimization with custom random forest regressor
 optimizer = Optimizer(space, base_estimator=RandomForestWithUncertainty(), acq_func="EI", acq_optimizer="sampling")
-for i in range(300):
+for i in range(2400):
     next_x = optimizer.ask()
     f_val = objective(next_x)
     optimizer.tell(next_x, f_val)
 
 best_parameters = optimizer.Xi[np.argmin(optimizer.yi)]
 print("Best parameters:", best_parameters)
-

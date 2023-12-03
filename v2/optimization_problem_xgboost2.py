@@ -56,21 +56,18 @@ def simulate_process_modified_v2(g_gap_value, Ibg_init, Ikir_coef, cm, dx, K_o):
         A[j, 1:] = Vm
     return A
 
-@njit(parallel=False)
-def plot_data2_modified(A):  
-    dx = 0.06
-    D = np.abs(A[-2, 98:135] - A[int(0.1 * len(A)), 98:135]) / np.abs(A[int(0.1 * len(A)), 98:135])[0]
-    distance_m = dx * np.arange(99, 136)
-    c = np.polyfit(distance_m, D, 1)
 
 def objective(params):
     ggap, Ibg_init, Ikir_coef, cm, dx, K_o = params
     A = simulate_process_modified_v2(ggap, Ibg_init, Ikir_coef, cm, dx, K_o)
     dx = 0.06
-    D = np.abs(A[-2, 98:135] - A[int(0.1 * len(A)), 98:135]) / np.abs(A[int(0.1 * len(A)), 98:135])[0]
+    #D = np.abs(A[-2, 98:135] - A[int(0.1 * len(A)), 98:135]) / np.abs(A[int(0.1 * len(A)), 98:135])[0]
+    D = np.abs(A[399998, 98:135] - A[99000, 98:135]) / np.abs(A[99000, 98:135])[0]
+    #D = np.abs(A[99000, 98:135])[0] / np.abs(A[399998, 98:135] - A[99000, 98:135]) 
     distance_m = dx * np.arange(99, 136)
     coefficients = np.polyfit(distance_m, D, 1)
-    loss = (coefficients[0] - 2)**2 + (coefficients[1] - 3.2)**2
+    #loss = (coefficients[0] - 2)**2 + (coefficients[1] - 3.2)**2
+    loss = (coefficients[0] + 0.0000000000001)**2 + (coefficients[1] - 0.6)**2 #  
     
     if np.isnan(loss) or np.isinf(loss):
         print("Invalid loss value:", loss, "for parameters:", params)
@@ -79,13 +76,15 @@ def objective(params):
     return loss
 
 space = [
-    Real(0.1, 25, name="ggap"),
-    Real(0.5, 1.5, name="Ibg_init"),
-    Real(0.5, 0.94, name="Ikir_coef"),
-    Real(8, 9.4, name="cm"),
-    Real(0.05, 0.07, name="dx"),
-    Real(1, 5, name="K_o")
+    Real(0.1, 35, name="ggap"),
+    Real(0.1, 1.5, name="Ibg_init"),
+    Real(0.3, 1.2, name="Ikir_coef"),
+    Real(8, 11, name="cm"),
+    Real(0.01, 0.09, name="dx"),
+    Real(1, 8, name="K_o")
 ]
+
+
 
 
 
@@ -98,12 +97,16 @@ class XGBoostWithUncertainty(xgb.XGBRegressor):
             # Convert margin prediction to probability using logistic function
             prob = 1.0 / (1.0 + np.exp(-preds))
             std_dev = prob * (1.0 - prob)  # For binary logistic regression
+            
+            # Clip std_dev to prevent extreme values
+            std_dev = np.clip(std_dev, 1e-5, 1e5)
+            
             return preds, std_dev
         return preds
 
 #Optimization with custom XGBoost regressor
 optimizer = Optimizer(space, base_estimator=XGBoostWithUncertainty(), acq_func="EI", acq_optimizer="sampling")
-for i in range(300):
+for i in range(2400):#300
     next_x = optimizer.ask()
     f_val = objective(next_x)
     optimizer.tell(next_x, f_val)

@@ -1,35 +1,15 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import random
+from skopt import gp_minimize
+from skopt.space import Real
+import time
 from numba import njit
-#Random number not needed really
-random_number = 1#random.random()
+import random
 
-def HK_deltas_vstim_vresponse_graph_modified_v2(ggap=1.0, Ibg_init=0.0, Ikir_coef=0.94, cm=9.4, dx=0.06, K_o=5):
-    max_val = 0.51
-    min_val = 0.5
-    images = []
+#Random number not needed really!
+random_number = 1
 
-    for counter in np.arange(min_val, max_val, 0.01):
-        ggapval = counter * ggap
-        print(f"ggapval={ggapval}")
-        A = simulate_process_modified_v2(ggapval, Ibg_init, Ikir_coef, cm, dx, K_o)
-        x = A[:, 0]
-        y = A[:, 98:135]
-
-        # Plot
-        plt.figure()
-        plt.plot(x, y, linewidth=3)
-        plt.title(f"G gap = {ggapval}")
-        images.append(f"Image{ggapval}.png")
-        plt.savefig(f"Image{ggapval}.png")
-        print("saved 1")
-        
-        plot_data2_modified(A)
-        
-        print("saved 2")
-
-    return images
+#def simulate_process_modified_v2(g_gap_value, Ibg_init, Ikir_coef, dt, cm, a, dx, F, R, K_o):
 
 @njit(parallel=False)
 def simulate_process_modified_v2(g_gap_value, Ibg_init, Ikir_coef, cm, dx, K_o):
@@ -65,7 +45,6 @@ def simulate_process_modified_v2(g_gap_value, Ibg_init, Ikir_coef, cm, dx, K_o):
             I_bg[kk] = Ibg_init * (Vm[kk] + 30)
             I_kir[kk] = Ikir_coef * np.sqrt(K_o) * ((Vm[kk] - E_K) / (1 + np.exp((Vm[kk] - E_K - 25) / 7)))
 
-            # ... Rest of the function body remains largely unchanged ...
             if kk == 0:
                 Vm[kk] += random_number * eki1 * (Vm[kk+1] - Vm[kk]) - eki2 * (I_bg[kk] + I_kir[kk] + I_app[kk])
             elif kk == Ng-1:
@@ -84,38 +63,74 @@ def simulate_process_modified_v2(g_gap_value, Ibg_init, Ikir_coef, cm, dx, K_o):
             if kk == 99:
                 vstims[kk] = Vm[kk]
             else:
-                vresps[kk] = Vm[kk]            
+                vresps[kk] = Vm[kk]
+                
+            
+            if Vm[kk] >= 1e6:
+                Vm[kk] = 1e6
+            
+            if Vm[kk] <= -1e6:
+                Vm[kk] = -1e6
 
         A[j, 0] = t
         A[j, 1:] = Vm
 
     return A
 
-
+@njit(parallel=False)
 def plot_data2_modified(A):  
     dx = 0.06
     D = np.abs(A[-2, 98:135] - A[int(0.1 * len(A)), 98:135]) / np.abs(A[int(0.1 * len(A)), 98:135])[0]
-
     distance_m = dx * np.arange(99, 136)
-    plt.figure()
-    plt.plot(distance_m, D, '.', markersize=8)
     c = np.polyfit(distance_m, D, 1)
     y_est = np.polyval(c, distance_m)
-    plt.plot(distance_m, y_est, 'r--', linewidth=2)
-    plt.savefig(f"Image2.png")
+    
 
- 
+#Bayesian Optimization Code
+def objective(params):
+    ggap, Ibg_init, Ikir_coef, cm, dx, K_o = params
+    
+    #Run the simulation with the provided parameters
+    A = simulate_process_modified_v2(ggap, Ibg_init, Ikir_coef, cm, dx, K_o)
+    
+    dx = 0.06
+    #D = np.abs(A[-2, 98:135] - A[int(0.1 * len(A)), 98:135]) / np.abs(A[int(0.1 * len(A)), 98:135])[0]
+    #D = np.abs(A[399998, 98:135] - A[99000, 98:135]) / np.abs(A[99000, 98:135])[0]
+    D = np.abs(A[99000, 98:135])[0] / np.abs(A[399998, 98:135] - A[99000, 98:135])
+    distance_m = dx * np.arange(99, 136)
+    
+    #Compute the polynomial coefficients from the model's result
+    coefficients = np.polyfit(distance_m, D, 1)
+    
+    #Compute the loss as the squared difference between the model's coefficients and the target coefficients
+    #loss = (coefficients[0] - 0.5)**2 + (coefficients[1] - (-0.01))**2
+    loss = (coefficients[0] + 0.0000000000001)**2 + (coefficients[1] - 0.6)**2
+    
+    if np.isnan(loss):
+        print("Loss is NaN")
+        print("Simulation Result A:", A)
+        print("Coefficients:", coefficients)
 
-#Bayesian Optimization
-#HK_deltas_vstim_vresponse_graph_modified_v2(ggap=22.823350409810097, Ibg_init=1.4137515444140243, Ikir_coef=0.8242785834941551, cm=9.043352128462157, dx=0.050635413384145275, K_o=3.327389680049543)
+    
+    return loss
 
-#XGBoost
-#HK_deltas_vstim_vresponse_graph_modified_v2(ggap=0.9651001054207696, Ibg_init=0.5064782981616258, Ikir_coef=0.9214774072209153, cm=9.27411333561133, dx=0.06705029426722967, K_o=3.2849319288716146)
+#Define the Parameter Space, TODO: need to discuss the value ranges here!
+space = [
+    Real(0.1, 35, name="ggap"),
+    Real(0.1, 1.5, name="Ibg_init"),
+    Real(0.3, 1.2, name="Ikir_coef"),
+    Real(8, 11, name="cm"),
+    Real(0.01, 0.09, name="dx"),
+    Real(1, 8, name="K_o")
+]
 
-#Random forrests
-#HK_deltas_vstim_vresponse_graph_modified_v2(ggap=0.11367203272084944, Ibg_init=0.5538705683100204, Ikir_coef=0.938252665035215, cm=8.925352662805283, dx=0.06013602000111776, K_o=4.947632840951089)
 
-#NN
-HK_deltas_vstim_vresponse_graph_modified_v2(ggap=11.13429464, Ibg_init=1.00481258, Ikir_coef=0.57666017, cm=9.04141524, dx=0.05815578, K_o=3.05022504)
 
+#Apply Bayesian Optimization
+result = gp_minimize(objective, space, n_calls=600, random_state=0)
+
+# Extract the best parameters
+best_parameters = result.x
+
+print("Best parameters:", best_parameters)
 

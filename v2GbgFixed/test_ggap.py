@@ -70,15 +70,27 @@ def objective(params):
         low, high = param_bounds[i]
         params[i] = np.clip(params[i], low, high)
         
-    ggap, Ibg_init, Ikir_coef, cm, dx, K_o = params
-    A = simulate_process_modified_v2(ggap, Ibg_init, Ikir_coef, cm, dx, K_o)
+    #ggap, Ibg_init, Ikir_coef, cm, dx, K_o = params
+    ggap, Ikir_coef= params
+    
+    cm = 9.4
     dx = 0.06
-    D = np.abs(A[-2, 98:135] - A[int(0.1 * len(A)), 98:135]) / np.abs(A[int(0.1 * len(A)), 98:135])[0]
+    K_o = 3
+    Ibg_init = 0.7*0.94
+    
+    #Run the simulation with the provided parameters
+    A = simulate_process_modified_v2(ggap, Ibg_init, Ikir_coef, cm, dx, K_o)
+    
+    dx = 0.06
+    #D = np.abs(A[-2, 98:135] - A[int(0.1 * len(A)), 98:135]) / np.abs(A[int(0.1 * len(A)), 98:135])[0]
+    D = np.abs(A[399998, 98:135] - A[99000, 98:135]) / np.abs(A[99000, 98:135])[0]
     distance_m = dx * np.arange(99, 136)
     coefficients = np.polyfit(distance_m, D, 1)
-    loss = (coefficients[0] - 2)**2 + (coefficients[1] - 3.2)**2
-    if np.isnan(loss):
+    #loss = (coefficients[0] - 2)**2 + (coefficients[1] - 3.2)**2
+    loss = (coefficients[0] + 0.0000000000001)**2 + (coefficients[1] - 0.6)**2 # 
+    if np.isnan(loss) or np.isinf(loss):
         print("NAN loss detected with params:", params)
+        loss = 1e10
         
     print("Completed objective function!")
     return loss, 
@@ -90,12 +102,12 @@ creator.create("Individual", list, fitness=creator.FitnessMin)
 toolbox = base.Toolbox()
 
 param_bounds = [
-    (0.5, 1.5),  # ggap
-    (0, 1),      # Ibg_init
-    (0.8, 1.0),  # Ikir_coef
-    (8, 11),     # cm
-    (0.05, 0.07),  # dx
-    (4, 6)       # K_o
+    (0.1, 35),  # ggap
+    #(0.1, 1.5),      # Ibg_init
+    (0.94, 0.94),  # Ikir_coef
+    #(8, 11),     # cm
+    #(0.01, 0.09),  # dx
+    #(1, 8)       # K_o
 ]
 
 
@@ -128,7 +140,7 @@ toolbox.register("evaluate", objective)
 
 def main():
     print("Initializing population...")
-    pop = toolbox.population(n=3000)
+    pop = toolbox.population(n=6000)
     print("Population initialized.")
     hof = tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values)

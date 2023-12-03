@@ -6,7 +6,7 @@ import random
 
 
 def HK_deltas_vstim_vresponse_graph():
-    max_val = 0.5
+    max_val = 0.51
     min_val = 0.5
 
     for counter in np.arange(min_val, max_val+0.001):  
