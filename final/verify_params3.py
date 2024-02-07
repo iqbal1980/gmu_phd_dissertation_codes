@@ -5,7 +5,7 @@ from numba import njit
 #Random number not needed really
 random_number = 1#random.random()
 
-def HK_deltas_vstim_vresponse_graph_modified_v2(ggap=1.0, Ibg_init=0.0, Ikir_coef=0.94, cm=9.4, dx=0.06, K_o=5):
+def HK_deltas_vstim_vresponse_graph_modified_v2(ggap, Ibg_init, Ikir_coef, cm, dx, K_o):
     max_val = 0.51
     min_val = 0.5
     images = []
@@ -94,7 +94,7 @@ def simulate_process_modified_v2(g_gap_value, Ibg_init, Ikir_coef, cm, dx, K_o):
 
 
 def plot_data2_modified(A,ggap,withReference=False):  
-    dx = 0.06
+    dx = 5
     #D = np.abs(A[399998, 98:135] - A[99998, 98:135]) / np.abs(A[99998, 98:135])[0]
     #D = np.abs(A[99998, 98:135])[0] / np.abs(A[399998, 98:135] - A[99998, 98:135])
     D = np.abs(A[399998, 98:135] - A[99000, 98:135]) / np.abs(A[99000, 98:135])[0]
@@ -126,28 +126,12 @@ def plot_data2_modified(A,ggap,withReference=False):
 
 Ibg_init_val = 0.7*0.94 
 
-#python optimization_problem_bayesian_2.py
-#Best parameters: [5.663117485986784, 0.48832107909365974, 9.107468635253378, 0.09, 6.813249673453096] 
-HK_deltas_vstim_vresponse_graph_modified_v2(ggap=5.663117485986784, Ibg_init=Ibg_init_val, Ikir_coef=0.48832107909365974, cm=9.107468635253378, dx=0.09, K_o=6.813249673453096)
  
- 
- 
-#python optimization_problem_random_forrest2.py
- 
-#python optimization_problem_xgboost2.py
-#[29.512762154105392, 0.5986815284200908, 10.090817786403688, 0.07152346229938092, 6.412888685179357]
-HK_deltas_vstim_vresponse_graph_modified_v2(ggap=29.512762154105392, Ibg_init=Ibg_init_val, Ikir_coef=0.5986815284200908, cm=10.090817786403688, dx=0.07152346229938092, K_o=6.412888685179357)
-
-
-
-#python optimization_problem_nn_pytorch2.py
-#Optimal parameters are: [22.3397405   0.96957738  8.57933038  0.06315757  6.32059941]
-HK_deltas_vstim_vresponse_graph_modified_v2(ggap=22.3397405, Ibg_init=Ibg_init_val, Ikir_coef=0.96957738, cm=8.57933038, dx=0.063157572, K_o=6.32059941)
 
 
 #Evolution completed!
-#Best individual is:  [14.740220873667019, 0.8596520488469712, 9.103441742596651, 0.05355931595905949, 5.780039772718714]
-HK_deltas_vstim_vresponse_graph_modified_v2(ggap=14.740220873667019, Ibg_init=Ibg_init_val, Ikir_coef=0.8596520488469712, cm=9.103441742596651, dx=0.05355931595905949, K_o=5.780039772718714)
+#Best individual is:  [0.3015830801507125, 0.94]  with fitness:  (0.00573706841604791,)
+HK_deltas_vstim_vresponse_graph_modified_v2(ggap=0.3015830801507125, Ibg_init=Ibg_init_val, Ikir_coef=0.94, cm=9.4, dx=0.06, K_o=3)
 
 
 

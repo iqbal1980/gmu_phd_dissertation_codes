@@ -2,12 +2,24 @@ import numpy as np
 from deap import base, creator, tools, algorithms
 from skopt.space import Real
 from numba import njit
+from numba import cuda
 
 random_number = 1
+ 
+threads_per_block = 256
+total_elements = 200  # Assuming Vm is a 1D array
+blocks_per_grid = (total_elements + threads_per_block - 1) // threads_per_block
 
+ 
 
-@njit(parallel=False)
-def simulate_process_modified_v2(g_gap_value, Ibg_init, Ikir_coef, cm, dx, K_o):
+@cuda.jit
+def simulate_process_modified_v2_cuda(Vm, I_bg, I_kir, I_app, g_gap_value, Ibg_init, Ikir_coef, cm, dx, K_o, A):
+    kk = cuda.grid(1)
+    if kk >= Vm.shape[0]:  # Boundary check
+        return
+        
+    kk = cuda.grid(1)
+    Ng = Vm.shape[0]
     dt=0.001
     F = 9.6485e4
     R = 8.314e3
@@ -70,16 +82,12 @@ def objective(params):
         low, high = param_bounds[i]
         params[i] = np.clip(params[i], low, high)
         
-    #ggap, Ibg_init, Ikir_coef, cm, dx, K_o = params
-    ggap, Ikir_coef= params
-    
-    cm = 9.4
-    dx = 0.06
-    K_o = 3
+    ggap, Ikir_coef, cm, dx, K_o = params
     Ibg_init = 0.7*0.94
     
-    #Run the simulation with the provided parameters
-    A = simulate_process_modified_v2(ggap, Ibg_init, Ikir_coef, cm, dx, K_o)
+    # Run the CUDA simulation and get the result
+    A = run_simulation(ggap, Ibg_init, Ikir_coef, cm, dx, K_o)  # Replaced function call
+    
     
     dx = 0.06
     #D = np.abs(A[-2, 98:135] - A[int(0.1 * len(A)), 98:135]) / np.abs(A[int(0.1 * len(A)), 98:135])[0]
@@ -104,10 +112,10 @@ toolbox = base.Toolbox()
 param_bounds = [
     (0.1, 35),  # ggap
     #(0.1, 1.5),      # Ibg_init
-    (0.94, 0.94),  # Ikir_coef #Need two params at least so I don't break the code
-    #(8, 11),     # cm
-    #(0.01, 0.09),  # dx
-    #(1, 8)       # K_o
+    (0.8, 1.2),  # Ikir_coef
+    (8, 11),     # cm
+    (0.01, 0.09),  # dx
+    (1, 8)       # K_o
 ]
 
 
@@ -138,6 +146,31 @@ toolbox.register("mutate", tools.mutGaussian, mu=0, sigma=1, indpb=0.2)
 toolbox.register("select", tools.selTournament, tournsize=3)
 toolbox.register("evaluate", objective)
 
+
+# Function to call the CUDA kernel
+def run_simulation(g_gap_value, Ibg_init, Ikir_coef, cm, dx, K_o):
+    Ng = 200
+    loop = 600000
+
+    # Initialize data arrays as device arrays
+    Vm = cuda.to_device(np.ones(Ng) * (-33))
+    I_bg = cuda.to_device(np.zeros(Ng) + Ibg_init)
+    I_kir = cuda.to_device(np.zeros(Ng))
+    I_app = cuda.to_device(np.zeros(Ng))
+    A = cuda.to_device(np.zeros((loop, Ng + 1)))
+
+    # Kernel invocation
+    threads_per_block = 256
+    blocks_per_grid = (Ng + threads_per_block - 1) // threads_per_block
+    simulate_process_modified_v2_cuda[blocks_per_grid, threads_per_block](Vm, I_bg, I_kir, I_app, g_gap_value, Ibg_init, Ikir_coef, cm, dx, K_o, A)
+
+    # Copy data back to host if necessary
+    A_host = A.copy_to_host()
+    return A_host
+
+# Rest of your code...
+
+
 def main():
     print("Initializing population...")
     pop = toolbox.population(n=6000)
@@ -158,9 +191,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
