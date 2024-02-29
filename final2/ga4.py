@@ -60,7 +60,7 @@ def simulate_process_modified_v2(g_gap_value, Ibg_init, Ikir_coef, cm, dx, K_o):
     for j in range(loop):
         t = j * dt
         if 100 <= t <= 400:
-            I_app[99] = 70.0
+            I_app[99] = -70.0
         else:
             I_app[99] = 0.0
 
@@ -117,6 +117,7 @@ def objective(params):
     
     cellLength = 60  # in Microns
     D = np.abs(A[399998, 101:135] - A[99000, 101:135]) / np.abs(A[99000, 101:135])[0]
+    #D =  np.abs(A[99000, 101:135])[0] / np.abs(A[399998, 101:135] - A[99000, 101:135])
     
     #print(D)
 
@@ -174,9 +175,9 @@ toolbox = base.Toolbox()
 
 param_bounds = [
     (0.1, 35),  # ggap
-    (0.90, 0.96),  # Ikir_coef
-    (8, 11),     # cm
-    (1, 8)       # K_o
+    (0.1, 1),  # Ikir_coef
+    (4, 15),     # cm
+    (1, 10)       # K_o
 ]
 
 # Attribute generator

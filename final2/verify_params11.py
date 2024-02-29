@@ -163,7 +163,7 @@ def plot_data2_modified(A, ggap, withReference=False):
     r_squared = 1 - (ss_res / ss_tot)
 
     plt.figure()
-    plt.ylim(-0.5, 3)
+    plt.ylim(-0.5, 1)
     plt.plot(distance_m, D, '.', markersize=8)
 
     # Plot the fitted exponential curve
@@ -221,7 +221,10 @@ Ibg_init_val = 0.7 * 0.94
 #HK_deltas_vstim_vresponse_graph_modified_v2(ggap=0.1, Ibg_init=Ibg_init_val, Ikir_coef=0.9572090470227771, cm=8.01256491565927, dx=global_dx, K_o=5.4863402101454914)
 
 #Params: [11.638369139459822, 0.9556485936099058, 9.557207892702143, 4.515043100865675], Loss: 0.0045647510168714805
-HK_deltas_vstim_vresponse_graph_modified_v2(ggap=11.638369139459822, Ibg_init=Ibg_init_val, Ikir_coef=0.9556485936099058, cm=9.557207892702143, dx=global_dx, K_o=4.515043100865675)
+#HK_deltas_vstim_vresponse_graph_modified_v2(ggap=11.638369139459822, Ibg_init=Ibg_init_val, Ikir_coef=0.9556485936099058, cm=9.557207892702143, dx=global_dx, K_o=4.515043100865675)
 
+#[12.331509363400139, 0.9432698788410949, 9.177416436533974, 4.561997105652324], Loss: 0.000236670390092817
+#HK_deltas_vstim_vresponse_graph_modified_v2(ggap=12.331509363400139, Ibg_init=Ibg_init_val, Ikir_coef=0.9432698788410949, cm=9.177416436533974, dx=global_dx, K_o=4.561997105652324)
 
-
+#Params: [20.008702984240095, 0.9, 11.0, 4.502039575569403], Loss: 0.05062149365102753
+HK_deltas_vstim_vresponse_graph_modified_v2(ggap=20.008702984240095, Ibg_init=Ibg_init_val, Ikir_coef=0.9, cm=11.0, dx=global_dx, K_o=4.502039575569403)
