@@ -7,10 +7,18 @@ from scipy.optimize import curve_fit
 from numba import generated_jit
 from numba import types
 import random
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import numpy as np
+
+# Set random seed for reproducibility
+torch.manual_seed(42)
 
 
 MIN_VALUE = -80
 MAX_VALUE = 40
+
 
 @njit
 def safe_log(x):
@@ -28,6 +36,11 @@ def exponential_decay_function(x, A, B):
 
 MIN_VM = -80 # Minimum physiologically reasonable value for Vm
 MAX_VM = 40 # Maximum physiologically reasonable value for Vm
+
+
+
+
+
 
 @njit(parallel=False)
 def ode_system(t, y, g_gap, Ibg_init, Ikir_coef, cm, dx, K_o, I_app_val, stimulation_time_start, stimulation_time_end, activated_cell_index):
@@ -136,3 +149,86 @@ cell_id = 100
 time = 300
 voltage = V_function(time, cell_id, ggap, Ibg_init_val, Ikir_coef, cm, dx, K_o, I_app_val, stimulation_time_start, stimulation_time_end, activated_cell_index)
 print(f"Voltage for cell {cell_id} at time {time}: {voltage}")
+
+
+
+
+
+
+
+
+
+
+
+#########################################################################################################################
+# Define the PINN architecture
+class PINN(nn.Module):
+    def __init__(self, input_dim, hidden_dim, output_dim):
+        super(PINN, self).__init__()
+        self.hidden_layer = nn.Linear(input_dim, hidden_dim)
+        self.output_layer = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, x):
+        x = torch.relu(self.hidden_layer(x))
+        x = self.output_layer(x)
+        return x
+
+# Generate random input data
+num_samples = 1000
+t = np.random.rand(num_samples, 1) * 600
+cell_id = np.random.randint(0, 200, size=(num_samples, 1))
+g_gap = np.random.uniform(0.1, 35, size=(num_samples, 1))
+Ibg_init = np.full((num_samples, 1), 0.7 * 0.94)
+Ikir_coef = np.random.uniform(0.90, 0.96, size=(num_samples, 1))
+cm = np.random.uniform(8, 11, size=(num_samples, 1))
+dx = np.full((num_samples, 1), 1.0)
+K_o = np.random.uniform(1, 8, size=(num_samples, 1))
+I_app_val = np.random.uniform(-70, 70, size=(num_samples, 1))
+stimulation_time_start = np.random.randint(0, 450, size=(num_samples, 1))
+stimulation_time_end = stimulation_time_start + np.random.randint(85, 390, size=(num_samples, 1))
+activated_cell_index = np.random.randint(85, 115, size=(num_samples, 1))
+
+# Prepare input data
+input_data = np.concatenate((t, cell_id, g_gap, Ibg_init, Ikir_coef, cm, dx, K_o, I_app_val, stimulation_time_start, stimulation_time_end, activated_cell_index), axis=1)
+
+# Convert input data to PyTorch tensor
+input_tensor = torch.tensor(input_data, dtype=torch.float32)
+
+# Create an instance of the PINN
+input_dim = 12
+hidden_dim = 64
+output_dim = 1
+
+pinn = PINN(input_dim, hidden_dim, output_dim)
+
+# Define loss function and optimizer
+criterion = nn.MSELoss()
+optimizer = optim.Adam(pinn.parameters(), lr=0.001)
+
+# Training loop
+num_epochs = 1000
+batch_size = 32
+
+for epoch in range(num_epochs):
+    # Shuffle and batch the data
+    indices = torch.randperm(num_samples)
+    for i in range(0, num_samples, batch_size):
+        batch_indices = indices[i:i+batch_size]
+        batch_input = input_tensor[batch_indices]
+        
+        # Forward pass
+        batch_output = pinn(batch_input)
+        
+        # Compute the loss (data loss only for now)
+        batch_target = torch.zeros_like(batch_output)  # Placeholder for the target values
+        loss = criterion(batch_output, batch_target)
+        
+        # Backward pass and optimization
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+    
+    # Print the loss every 100 epochs
+    if (epoch + 1) % 100 == 0:
+        print(f"Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}")
+#########################################################################################################################
