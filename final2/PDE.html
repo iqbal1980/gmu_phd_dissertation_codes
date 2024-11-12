@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Membrane Potential Dynamics PDE</title>
+</head>
+<body>
+
+<h2>Continuous Model of Membrane Potential Dynamics</h2>
+
+<p>1. <b>Membrane Potential Dynamics:</b></p>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+  <mrow>
+    <mfrac>
+      <mrow>
+        <mo>&#x2202;</mo>
+        <mi>V</mi>
+        <mo>&#x208D;</mo><mi>m</mi><mo>&#x208E;</mo>
+      </mrow>
+      <mrow>
+        <mo>&#x2202;</mo>
+        <mi>t</mi>
+      </mrow>
+    </mfrac>
+    <mo>=</mo>
+    <mi>D</mi>
+    <mfrac>
+      <mrow>
+        <mo>&#x2202;</mo>
+        <mo>&#x00B2;</mo>
+        <mi>V</mi>
+        <mo>&#x208D;</mo><mi>m</mi><mo>&#x208E;</mo>
+      </mrow>
+      <mrow>
+        <mo>&#x2202;</mo>
+        <mi>x</mi>
+        <mo>&#x00B2;</mo>
+      </mrow>
+    </mfrac>
+    <mo>-</mo>
+    <mfrac>
+      <mn>1</mn>
+      <mi>cm</mi>
+    </mfrac>
+    <mo>(</mo>
+    <mi>I</mi>
+    <mo>&#x208D;</mo><mi>b</mi><mi>g</mi><mo>&#x208E;</mo>
+    <mo>+</mo>
+    <mi>I</mi>
+    <mo>&#x208D;</mo><mi>k</mi><mi>i</mi><mi>r</mi><mo>&#x208E;</mo>
+    <mo>+</mo>
+    <mi>I</mi>
+    <mo>&#x208D;</mo><mi>a</mi><mi>p</mi><mi>p</mi><mo>&#x208E;</mo>
+    <mo>)</mo>
+  </mrow>
+</math>
+
+<p>2. <b>Background Current (I<sub>bg</sub>):</b></p>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+  <mrow>
+    <mi>I</mi>
+    <mo>&#x208D;</mo><mi>b</mi><mi>g</mi><mo>&#x208E;</mo>
+    <mo>=</mo>
+    <mi>I</mi>
+    <mo>&#x208D;</mo><mi>b</mi><mi>g</mi><mo>&#x005F;</mo><mi>i</mi><mi>n</mi><mi>i</mi><mi>t</mi><mo>&#x208E;</mo>
+    <mo>&#x22C5;</mo>
+    <mo>(</mo>
+    <mi>V</mi>
+    <mo>&#x208D;</mo><mi>m</mi><mo>&#x208E;</mo>
+    <mo>+</mo>
+    <mn>30</mn>
+    <mo>)</mo>
+  </mrow>
+</math>
+
+<p>3. <b>Potassium Equilibrium Potential (E<sub>K</sub>):</b></p>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+  <mrow>
+    <mi>E</mi>
+    <mo>&#x208D;</mo><mi>K</mi><mo>&#x208E;</mo>
+    <mo>=</mo>
+    <mo>(</mo>
+    <mfrac>
+      <mrow>
+        <mi>R</mi>
+        <mo>&#x22C5;</mo>
+        <mn>293</mn>
+      </mrow>
+      <mi>F</mi>
+    </mfrac>
+    <mo>)</mo>
+    <mo>&#x22C5;</mo>
+    <mi>ln</mi>
+    <mo>(</mo>
+    <mfrac>
+      <mi>K</mi>
+      <mo>&#x005F;</mo>
+      <mi>o</mi>
+      <mn>150</mn>
+    </mfrac>
+    <mo>)</mo>
+  </mrow>
+</math>
+
+<p>4. <b>Inward-rectifier Potassium Current (I<sub>kir</sub>):</b></p>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+  <mrow>
+    <mi>I</mi>
+    <mo>&#x208D;</mo><mi>k</mi><mi>i</mi><mi>r</mi><mo>&#x208E;</mo>
+    <mo>=</mo>
+    <mi>I</mi>
+    <mo>&#x208D;</mo><mi>k</mi><mi>i</mi><mi>r</mi><mo>&#x005F;</mo><mi>c</mi><mi>o</mi><mi>e</mi><mi>f</mi><mo>&#x208E;</mo>
+    <mo>&#x22C5;</mo>
+    <msqrt>
+      <mi>K</mi>
+      <mo>&#x005F;</mo>
+      <mi>o</mi>
+    </msqrt>
+    <mo>&#x22C5;</mo>
+    <mfrac>
+      <mrow>
+        <mi>V</mi>
+        <mo>&#x208D;</mo><mi>m</mi><mo>&#x208E;</mo>
+        <mo>-</mo>
+        <mi>E</mi>
+        <mo>&#x208D;</mo><mi>K</mi><mo>&#x208E;</mo>
+      </mrow>
+      <mrow>
+        <mn>1</mn>
+        <mo>+</mo>
+        <mi>exp</mi>
+        <mo>(</mo>
+        <mfrac>
+          <mrow>
+            <mi>V</mi>
+            <mo>&#x208D;</mo><mi>m</mi><mo>&#x208E;</mo>
+            <mo>-</mo>
+            <mi>E</mi>
+            <mo>&#x208D;</mo><mi>K</mi><mo>&#x208E;</mo>
+            <mo>-</mo>
+            <mn>25</mn>
+          </mrow>
+          <mn>7</mn>
+        </mfrac>
+        <mo>)</mo>
+      </mrow>
+    </mfrac>
+  </mrow>
+</math>
+
+<p>5. <b>Applied Current (I<sub>app</sub>):</b></p>
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+  <mrow>
+    <mi>I</mi>
+    <mo>&#x208D;</mo><mi>a</mi><mi>p</mi><mi>p</mi><mo>&#x208E;</mo>
+    <mo>=</mo>
+    <mrow>
+      <munderover>
+        <mo>{</mo>
+        <mrow>
+          <mi>I</mi>
+          <mo>&#x208D;</mo><mi>a</mi><mi>p</mi><mi>p</mi><mo>&#x005F;</mo><mi>v</mi><mi>a</mi><mi>l</mi><mo>&#x208E;</mo>
+        </mrow>
+        <mrow>
+          <mi>x</mi>
+          <mo>&#x2080;</mo>
+          <mo>&leq;</mo>
+          <mi>x</mi>
+          <mo>&leq;</mo>
+          <mi>x</mi>
+          <mo>&#x2081;</mo>
+          <mo>and</mo>
+          <mn>100</mn>
+          <mo>&leq;</mo>
+          <mi>t</mi>
+          <mo>&leq;</mo>
+          <mn>400</mn>
+        </mrow>
+      </munderover>
+      <mn>0</mn>
+      <mo>,</mo>
+      <mo>otherwise</mo>
+    </mrow>
+  </mrow>
+</math>
+
+</body>
+</html>

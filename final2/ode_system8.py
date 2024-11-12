@@ -4,7 +4,7 @@ from scipy.integrate import solve_ivp
 from numba import njit
 from numba.extending import overload
 from scipy.optimize import curve_fit
-from numba import generated_jit
+#from numba import generated_jit
 from numba import types
 import random
 

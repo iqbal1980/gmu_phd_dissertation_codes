@@ -4,7 +4,7 @@ from scipy.integrate import solve_ivp
 from numba import njit
 from numba.extending import overload
 from scipy.optimize import curve_fit
-from numba import generated_jit
+#from numba import generated_jit
 from numba import types
 
 MIN_VALUE = -80
@@ -61,8 +61,8 @@ def HK_deltas_vstim_vresponse_graph_modified_v2(ggap, Ibg_init, Ikir_coef, cm, d
     y0 = np.ones(Ng) * (-33)  # Initial condition
 
     #sol = solve_ivp(ode_system, t_span, y0, args=(ggap, Ibg_init, Ikir_coef, cm, dx, K_o, I_app_val), method='RK45')
-    #sol = solve_ivp(ode_system, t_span, y0, args=(ggap, Ibg_init, Ikir_coef, cm, dx, K_o, I_app_val), method='RK23')
-    sol = solve_ivp(ode_system, t_span, y0, args=(ggap, Ibg_init, Ikir_coef, cm, dx, K_o, I_app_val), method='Radau')
+    sol = solve_ivp(ode_system, t_span, y0, args=(ggap, Ibg_init, Ikir_coef, cm, dx, K_o, I_app_val), method='RK23')
+    #sol = solve_ivp(ode_system, t_span, y0, args=(ggap, Ibg_init, Ikir_coef, cm, dx, K_o, I_app_val), method='Radau')
 
     x = sol.t
     y = sol.y[100:134]
