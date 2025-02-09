@@ -1,0 +1,10 @@
+"Paper Number","Title","Citation","Key Insights","Why These Papers Are Suitable"
+"1","Brain capillary pericytes are metabolic sentinels that control blood flow through a KATP channel-dependent energy switch","Hariharan et al., 2022","- Demonstrates that pericytes sense metabolic state (e.g., low glucose/ATP) to activate KATP channels
+- Shows that pericyte hyperpolarization propagates via gap junctions, leading to increased blood flow
+- Provides quantitative patch-clamp and in vivo imaging data","Directly validates the core 'energy switch' mechanism via KATP channels in pericytes. It allows you to test your metabolic sensing module and relate voltage shifts to blood flow changes."
+"2","Capillary K⁺-sensing initiates retrograde hyperpolarization to increase local cerebral blood flow","Longden et al., 2017","- Establishes that capillary endothelial cells sense extracellular K⁺ and propagate hyperpolarizing signals upstream
+- Highlights the critical role of Kir2.1 channels in endothelial cells for electrical signal conduction
+- Provides experimental data on gap junction coupling between pericytes and endothelial cells","Provides data on the propagation of hyperpolarizing signals via gap junctions and the critical role of Kir2.1 channels in endothelial cells. This helps you extend your model from a single-cell focus to a network model that includes pericyte-endothelial coupling."
+"3","PIP₂ corrects cerebral blood flow deficits in small vessel disease by rescuing capillary Kir2.1 activity","Dabertrand et al., 2021","- Shows that impaired Kir2.1 function in capillary endothelial cells disrupts neurovascular coupling
+- Demonstrates that exogenous PIP₂ can rescue Kir2.1 function and restore blood flow
+- Emphasizes the importance of Kir2.1 in the electrical conduction pathway despite its lower expression in pericytes","Offers insights into how pathological conditions (such as small vessel disease) impair Kir2.1 function and how rescuing this function (via PIP₂) can restore proper blood flow. This paper is key for investigating mutation and disease effects in your computational model."
